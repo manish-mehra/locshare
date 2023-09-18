@@ -1,9 +1,16 @@
+import {lazy } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+const Home = lazy(() => import('./pages/Home'))
 
+function App() {
 
-export default function App() {
   return (
-    <div>
-      <h1>App</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />}></Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
+
+export default App;

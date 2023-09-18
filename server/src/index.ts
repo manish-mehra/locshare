@@ -28,7 +28,10 @@ const io: Server = new Server(server, {
 
 io.on('connection', (socket: Socket) => {
   console.log(`User connected: ${socket.id}`)
-
+  socket.on('ping', () => {
+    console.log('ping received')
+    socket.emit('pong', 'Hello from server')
+  })
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`)
   })
