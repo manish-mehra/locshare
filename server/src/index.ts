@@ -32,6 +32,15 @@ io.on('connection', (socket: Socket) => {
     console.log('ping received')
     socket.emit('pong', 'Hello from server')
   })
+  socket.on('createRoom', (data) => {
+    const roomId = Math.random().toString(36).substring(2, 7)
+    socket.join(roomId)
+    socket.emit('roomCreated', {
+      ...data,
+      roomId,
+      msg: 'Room created successfully'
+    })
+  })
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`)
   })
