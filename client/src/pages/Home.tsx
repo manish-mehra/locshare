@@ -26,13 +26,13 @@ export default function Home() {
 
   return (
     <div className='flex justify-center'>
-      <div className='flex flex-col md:min-w-[650px]'>
+      <div className='flex flex-col md:min-w-[650px] p-2'>
         <section>
           <div className='mb-10 mt-10'>
             <h1 className='text-3xl text-gray-900 font-bold'>LocShare</h1>
             <h2 className='text-lg text-gray-800 font-semibold'>Real-Time Location Sharing, Made Easy</h2>
           </div>
-          <div className='flex gap-2 items-start mb-5'>
+          <div className='flex flex-wrap gap-2 items-start mb-5'>
             <button className='bg-green-400 text-sm text-gray-700 font-bold p-2 border border-blue-300 rounded-md'>Share Location</button>
             <span className='flex gap-1'>
               <input type = "text" placeholder = "Enter a code or link" className='border border-blue-300 bg-gray-300 rounded-md p-2 outline-none ring-0 text-sm font-medium' />
