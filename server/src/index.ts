@@ -38,7 +38,6 @@ io.on('connection', (socket: Socket) => {
     socket.emit('roomCreated', {
       ...data,
       roomId,
-      msg: 'Room created successfully'
     })
   })
   socket.on('disconnect', () => {
