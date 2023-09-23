@@ -28,10 +28,12 @@ const io: Server = new Server(server, {
 
 io.on('connection', (socket: Socket) => {
   console.log(`User connected: ${socket.id}`)
+  
   socket.on('ping', () => {
     console.log('ping received')
-    socket.emit('pong', 'Hello from server')
+    io.emit('pong', 'Hello from server')
   })
+  
   socket.on('createRoom', (data) => {
     const roomId = Math.random().toString(36).substring(2, 7)
     socket.join(roomId)
@@ -40,6 +42,41 @@ io.on('connection', (socket: Socket) => {
       roomId,
     })
   })
+
+  socket.on('joinRoom', (data) => {
+    console.log('join request made')
+    const roomExists = io.sockets.adapter.rooms.has(data.roomId)
+    if (roomExists) {
+      socket.join(data.roomId)
+      
+      // Notify the room creator about the new user
+      const roomClients: Set<string> | undefined = io.sockets.adapter.rooms.get(data.roomId)
+      const creatorSocketId = roomClients && Array.from(roomClients).find((socketId) => socketId !== socket.id)
+
+      if (creatorSocketId) {
+        const creatorSocket = io.sockets.sockets.get(creatorSocketId)
+        if (creatorSocket) {
+          creatorSocket.emit('userJoinedRoom', {
+            userId: socket.id
+          })
+        }
+      }
+      // msg to joiner
+      io.to(`${socket.id}`).emit('roomJoined', {
+        status: 'OK',
+      })
+
+    } else {
+      io.to(`${socket.id}`).emit('joinRoomResponse', {
+        status: 'ERROR'
+      })
+    }
+  })
+  
+  socket.on('updateLocation', (data) => {
+    io.emit('updateLocationResponse', data)
+  })
+
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`)
   })

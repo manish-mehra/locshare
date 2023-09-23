@@ -2,15 +2,10 @@ import {useState, useEffect} from 'react'
 import {useSocket} from '../context/socket'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-
 import Map from '../components/Map'
+import { GeolocationPosition, SocketStatus } from '../types'
 
-type SocketStatus = 'connecting' | 'connected' | 'disconnected' | 'error'
 type LocationStatus = 'accessed' | 'denied' | 'unknown' | 'error'
-type GeolocationPosition = {
-  lat: number;
-  lng: number;
-}
 type RoomInfo = {
   roomId: string;
   position: GeolocationPosition;
@@ -34,10 +29,10 @@ export default function Home() {
     let watchId: number | null = null
     if('geolocation' in navigator) {
       watchId = navigator.geolocation.watchPosition((position) => {
-      setPosition({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-      })
+        setPosition({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        })
       setLocationStatus('accessed')
       }, (error) => {
         handleLocationError(error)
@@ -71,21 +66,41 @@ export default function Home() {
 
   useEffect(() => {
     if(socket) {
+      socket.emit('updateLocation', {
+        position
+      })
+    }
+  }, [position])
+
+  useEffect(() => {
+    if(socket) {
       socket.on('connect', () => {
         setSocketStatus('connected')
         socket.emit('createRoom', {
           position
         })
+      })
 
-        socket.on('roomCreated', (data: {roomId: string, msg: string, position: GeolocationPosition}) => {
-          console.log(data)
-          toast.success('You are live!', {
-            autoClose: 2000,
-            })
-          setRoomInfo(data)
+      socket.on('roomCreated', (data: {roomId: string, msg: string, position: GeolocationPosition}) => {
+        console.log(data)
+        toast.success('You are live!', {
+          autoClose: 2000,
+          })
+        setRoomInfo(data)
+      })
+
+      socket.on('userJoinedRoom', (data) => {
+        console.log('someone joined the room', data)
+        position && socket.emit('updateLocation', {
+          position
         })
+        toast.info(`${data.userId} joined the room`, {
+          autoClose: 2000,
+        })
+      })
 
-
+      socket.on("connect_error", (err:any) => {
+        console.log(`connect_error due to ${err.message}`)
       })
 
       socket.on('disconnect', () => {
@@ -116,7 +131,7 @@ export default function Home() {
             !socket && (
               <div className='flex flex-wrap gap-2 items-start mb-5'>
                 <button 
-                  className='bg-orange-400 text-sm text-gray-700 font-bold p-2 border border-blue-300 rounded-md'
+                  className='bg-orange-400 text-md text-gray-700 font-bold py-2 px-2 border border-blue-300 rounded-md'
                   onClick={() => {
                     if(locationStatus === 'accessed') {
                       connectToSocketServer()
@@ -128,8 +143,8 @@ export default function Home() {
                   }}
                   >{locationStatus === 'accessed' ? 'Share Location' : 'Access Location'}</button>
                 <span className='flex gap-1'>
-                  <input type = "text" placeholder = "Enter a link" className='border border-blue-300 bg-gray-300 rounded-md p-2 outline-none ring-0 text-sm font-medium' />
-                  <button className='bg-yellow-400 text-sm text-gray-700 font-bold p-2 border border-blue-300 rounded-md'>Join</button>
+                  <input type = "text" placeholder = "Enter a link" className='border border-blue-300 bg-gray-300 rounded-md p-2 outline-none ring-0 text-md font-medium' />
+                  <button className='bg-yellow-400 text-md text-gray-700 font-bold py-2 px-4 border border-blue-300 rounded-md'>Join</button>
                 </span>
               </div>
             )
@@ -156,7 +171,7 @@ export default function Home() {
         {
            socketStatus === 'connected' && roomInfo && (
               <div className='flex flex-col items-start bg-yellow-400 p-2 rounded-md'>
-                <p><span className='text-md font-semibold text-gray-700'>{`${window.location.href}${roomInfo.roomId}`}</span></p>
+                <p><span className='text-md font-semibold text-gray-700'>{`${window.location.href}location/${roomInfo.roomId}`}</span></p>
               </div>
             )
           }
