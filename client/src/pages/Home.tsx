@@ -125,7 +125,7 @@ export default function Home() {
 
   return (
     <div className='flex justify-center p-3'>
-      <div className='flex flex-col md:min-w-full xl:min-w-[1250px] mb-4'>
+      <div className='flex flex-col md:min-w-full xl:min-w-[1100px] xl:max-w-[1200px] mb-4'>
         <section className='pt-4 pb-20'>
           <Header/>
         </section>
@@ -136,21 +136,21 @@ export default function Home() {
             {
               position && (
                 <div className='flex gap-2 justify-end text-gray-200'>
-              <p className='font-bold text-sm'>Lat: <span className='text-lg font-bold'>{position.lat} | </span></p>
-              <p className='font-bold text-sm'>Lng: <span className='text-lg font-bold'>{position.lng}</span></p>
-            </div>
+                  <p className='font-bold text-sm'>Lat: <span className='text-lg font-bold'>{position.lat} | </span></p>
+                  <p className='font-bold text-sm'>Lng: <span className='text-lg font-bold'>{position.lng}</span></p>
+                </div>
               )
             }
           </div>
         </section>
         <section className='flex flex-col lg:flex-row gap-4 w-full'>
-          <div className='flex flex-col justify-between gap-4 h-full w-full bg-slate-500 px-4 py-6 rounded-xl lg:min-w-[20rem] lg:max-w-sm'>
-            <article className='flex flex-col gap-3'>
+          <div className={`flex flex-col justify-between gap-4 h-min w-full bg-slate-500 px-4 py-6 rounded-xl lg:h-full lg:min-w-[20rem] ${position ? 'lg:max-w-sm' : 'w-full'}`}>
+            <article className='flex flex-col gap-3 w-full'>
               {
                 socketStatus === 'disconnected' && (
-                  <div className='flex flex-col gap-6 items-start'>
+                  <div className='flex flex-col gap-6 items-start w-full'>
                     <button 
-                      className='bg-purple-600 text-xl text-white font-bold py-2 px-2 rounded-md'
+                      className='bg-purple-800 text-xl text-white font-bold py-2 px-2 rounded-md'
                       onClick={() => {
                         if(locationStatus === 'accessed') {
                           connectToSocketServer()
@@ -171,9 +171,9 @@ export default function Home() {
               {
                 socketStatus === 'connected' && roomInfo && (
                   <>
-                    <div className='flex gap-2 items-center bg-gray-300 rounded-md p-3'>
-                      <p className='text-md font-bold break-all'>{`${window.location.href}location/${roomInfo.roomId}`}</p>
-                      <span className='cursor-pointer p-2 rounded-full  hover:bg-gray-200 flex items-center' onClick={() => {
+                    <div className='flex gap-2 items-center justify-between bg-gray-300 rounded-md p-3'>
+                      <p className='text-md font-bold break-all peer'>{`${window.location.href}location/${roomInfo.roomId}`}</p>
+                      <span className='cursor-pointer p-2 rounded-full  hover:bg-gray-200 flex items-center active:animate-ping' onClick={() => {
                         const url = `${window.location.href}location/${roomInfo.roomId}`
                         navigator.clipboard.writeText(url).then(() =>{
                           toast.success('Copied to clipboard!', {
@@ -209,15 +209,13 @@ export default function Home() {
               )
             }
           </div>
-          <div className='w-full'>
             {
               position && (
-                <article className='bg-gray-200 rounded-md overflow-hidden'>
+                <article className='bg-gray-200 rounded-md overflow-hidden w-full'>
                   <Map location={position}/>
                 </article>
               )
             }
-          </div>
         </section>
       </div>
     </div>

@@ -41,7 +41,7 @@ function Map({location}: {location: GeolocationPosition}) {
 
 
   return (
-    <div className='w-full bg-gray-100 h-[600px] md:h-[800px]'>
+    <div className='w-full bg-gray-100 h-[600px] md:h-[550px]'>
       <MapContainer center = {[location.lat, location.lng]} zoom={30} scrollWheelZoom={true} className='h-screen' >
         <TileLayer
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'

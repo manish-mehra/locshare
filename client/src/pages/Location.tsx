@@ -63,33 +63,57 @@ function Location() {
   }, [socket])
 
   return (
-  <div className='flex justify-center'>
-    <div className='flex flex-col md:min-w-[900px] md:max-w-[1200px] p-2 mb-5'>
-        <section className='pt-3'>
-          <Header />
-        </section>
-        <section>
+  <div className='flex justify-center p-3'>
+    <div className='flex flex-col md:min-w-full xl:min-w-[1100px] xl:max-w-[1200px] mb-4'>
+      <section className='pt-4 pb-20'>
+        <Header/>
+      </section>
+      <section className='pb-2'>
+        <div className='mb-4 bg-slate-600 rounded-md p-3 flex flex-wrap gap-3 justify-between items-center w-full'>
           <Status locationStatus = {null} socketStatus={socketStatus}/>
-        </section>
-
-        {
-          socketStatus === 'error' && (
-            <section>
-              <div className='flex flex-col gap-2 items-start mb-5'>
-                <p className='text-lg text-gray-800 font-semibold'>Failed to connect to server</p>
-                <p className='text-sm text-gray-600'>Please try again later</p>
+          {
+            position && (
+              <div className='flex gap-2 justify-end text-gray-200'>
+                <p className='font-bold text-sm'>Lat: <span className='text-lg font-bold'>{position.lat} | </span></p>
+                <p className='font-bold text-sm'>Lng: <span className='text-lg font-bold'>{position.lng}</span></p>
               </div>
-            </section>
-          )
-        }
+            )
+            }
+        </div>
+      </section>
+
+      {
+        socketStatus === 'connecting' && (
+          <section className='bg-red-400 mt-5 p-2 rounded-md animate-bounce'>
+            <div className='flex flex-col gap-2 items-start mb-5'>
+              <p className='text-lg text-white font-semibold'>Connecting to server</p>
+              <p className='text-sm text-gray-100'>Please wait...</p>
+            </div>
+          </section>
+        )
+      }
+
+      {
+        socketStatus === 'error' && (
+          <section className='bg-red-500 mt-5 p-2 rounded-md'>
+            <div className='flex flex-col gap-2 items-start mb-5'>
+              <p className='text-lg text-white font-semibold'>Failed to connect to server</p>
+              <p className='text-sm text-white'>Please try again later</p>
+            </div>
+          </section>
+        )
+      }
           
         {
           socketStatus === 'connected' && (
           <React.Fragment>
             {
               roomStatus === 'unknown' && (
-                <section>
-                  <p>checking room status</p>
+                <section className='bg-red-500 mt-5 p-2 rounded-md'>
+                  <div className='flex flex-col gap-2 items-start mb-5'>
+                    <p className='text-lg text-white font-semibold'>Room is unknown</p>
+                    <p className='text-sm text-white'>Please try again later</p>
+                  </div>
                 </section>
               )
             }
@@ -97,14 +121,11 @@ function Location() {
             {
               roomStatus === 'joined' && (
                 <section>
-                   <p className='text-xs font-semibold text-black'>location accessed</p>
                   {
                     position && (
-                      <section className='bg-gray-200 rounded-md overflow-hidden'>
-                        <div className=''>
-                          <Map location={position}/>
-                        </div>
-                      </section>
+                      <div className='bg-gray-200 rounded-md overflow-hidden'>
+                        <Map location={position}/>
+                      </div>
                     )
                   }
                 </section>
@@ -113,8 +134,11 @@ function Location() {
 
             {
               roomStatus === 'not-exist' && (
-                <section>
-                  <p>room doesnt exist</p>
+                <section className='bg-red-500 mt-5 p-2 rounded-md'>
+                  <div className='flex flex-col gap-2 items-start mb-5'>
+                    <p className='text-lg text-white font-semibold'>Room doesn't exist!</p>
+                    <p className='text-sm text-white'>Enter the correct url</p>
+                  </div>
                 </section>
               )
             }
