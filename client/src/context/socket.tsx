@@ -21,7 +21,9 @@ export const SocketProvider = ({children}: SocketProviderProps) => {
     if(!socket) {
       const newSocket: Socket = io(SOCKET_URL)
       setSocket(newSocket)
+      return
     }
+    socket.connect()
   }
 
   return (

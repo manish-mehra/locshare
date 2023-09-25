@@ -1,6 +1,8 @@
 import React, {useState, useEffect} from 'react'
 import { useParams } from 'react-router-dom'
 import {useSocket} from '../context/socket'
+import Header from '../components/Header'
+import Status from '../components/Status'
 import Map from '../components/Map'
 import { SocketStatus, GeolocationPosition } from '../types'
 
@@ -63,11 +65,13 @@ function Location() {
   return (
   <div className='flex justify-center'>
     <div className='flex flex-col md:min-w-[900px] md:max-w-[1200px] p-2 mb-5'>
-        <section>
-          <div className={`p-3 w-full border-2 border-blue-400 rounded-md ${socketStatus === 'connected' ? 'bg-green-400' : 'bg-red-400'}`}>
-            <p className='text-xs font-semibold text-black'>{socketStatus}</p>
-          </div>
+        <section className='pt-3'>
+          <Header />
         </section>
+        <section>
+          <Status locationStatus = {null} socketStatus={socketStatus}/>
+        </section>
+
         {
           socketStatus === 'error' && (
             <section>

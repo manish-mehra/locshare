@@ -2,10 +2,14 @@ import {useState, useEffect} from 'react'
 import {useSocket} from '../context/socket'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import Header from '../components/Header'
+import Status from '../components/Status'
 import Map from '../components/Map'
-import { GeolocationPosition, SocketStatus } from '../types'
+import { GeolocationPosition, SocketStatus, LocationStatus } from '../types'
+import {MdOutlineLocationOn, MdOutlineLocationOff} from 'react-icons/md'
+import {LuCopy} from 'react-icons/lu'
 
-type LocationStatus = 'accessed' | 'denied' | 'unknown' | 'error'
+
 type RoomInfo = {
   roomId: string;
   position: GeolocationPosition;
@@ -110,82 +114,111 @@ export default function Home() {
   }, [socket])
 
   function stopSharingLocation() {
-    if (navigatorWatchId) {
-      navigator.geolocation.clearWatch(navigatorWatchId)
-      setNavigatorWatchId(null)
-      setPosition(null)
       socket.disconnect()
-    }
+      setSocketStatus('disconnected')
+      setRoomInfo(null)
+      toast.success('You are no longer live!', {
+        autoClose: 2000,
+      })
   }
 
 
   return (
-    <div className='flex justify-center'>
-      <div className='flex flex-col md:min-w-[900px] md:max-w-[1200px] p-2 mb-5'>
-        <section className='mb-4'>
-          <div className='mb-10 mt-10'>
-            <h1 className='text-3xl text-gray-900 font-bold'>LocShare</h1>
-            <h2 className='text-lg text-gray-800 font-semibold'>Real-Time Location Sharing, Made Easy</h2>
-          </div>
-          {
-            !socket && (
-              <div className='flex flex-wrap gap-2 items-start mb-5'>
-                <button 
-                  className='bg-orange-400 text-md text-gray-700 font-bold py-2 px-2 border border-blue-300 rounded-md'
-                  onClick={() => {
-                    if(locationStatus === 'accessed') {
-                      connectToSocketServer()
-                    } else {
-                      toast.error('Please allow location access', {
-                        autoClose: 2000,
-                      })
-                    }
-                  }}
-                  >{locationStatus === 'accessed' ? 'Share Location' : 'Access Location'}</button>
-                <span className='flex gap-1'>
-                  <input type = "text" placeholder = "Enter a link" className='border border-blue-300 bg-gray-300 rounded-md p-2 outline-none ring-0 text-md font-medium' />
-                  <button className='bg-yellow-400 text-md text-gray-700 font-bold py-2 px-4 border border-blue-300 rounded-md'>Join</button>
-                </span>
-              </div>
-            )
-          }
-          {
-            position ? (
-              <div className='flex gap-2 justify-end text-gray-900 mb-2'>
-                <p className='font-bold text-sm'>Lat: <span className='text-lg font-bold'>{position.lat} | </span></p>
-                <p className='font-bold text-sm'>Lng: <span className='text-lg font-bold'>{position.lng}</span></p>
-              </div>
-            ): null
-          }
+    <div className='flex justify-center p-3'>
+      <div className='flex flex-col md:min-w-full xl:min-w-[1250px] mb-4'>
+        <section className='pt-4 pb-20'>
+          <Header/>
         </section>
 
-        <section className='mb-4 flex w-full gap-2'>
-          <div className={`p-3 w-full border-2 border-blue-400 rounded-md ${locationStatus === 'accessed' ? 'bg-green-400' : 'bg-red-400'}`}>
-            <p className='text-xs font-semibold text-black'>location {locationStatus}</p>
-          </div>
-          <div className={`p-3 w-full border-2 border-blue-400 rounded-md ${socketStatus === 'connected' ? 'bg-green-400' : 'bg-red-400'}`}>
-            <p className='text-xs font-semibold text-black'>{socketStatus}</p>
+        <section className='pb-2'>
+          <div className='mb-4 bg-slate-600 rounded-md p-3 flex flex-wrap gap-3 justify-between items-center w-full'>
+            <Status locationStatus = {locationStatus} socketStatus={socketStatus}/>
+            {
+              position && (
+                <div className='flex gap-2 justify-end text-gray-200'>
+              <p className='font-bold text-sm'>Lat: <span className='text-lg font-bold'>{position.lat} | </span></p>
+              <p className='font-bold text-sm'>Lng: <span className='text-lg font-bold'>{position.lng}</span></p>
+            </div>
+              )
+            }
           </div>
         </section>
-        <section className='mb-4'>
-        {
-           socketStatus === 'connected' && roomInfo && (
-              <div className='flex flex-col items-start bg-yellow-400 p-2 rounded-md'>
-                <p><span className='text-md font-semibold text-gray-700'>{`${window.location.href}location/${roomInfo.roomId}`}</span></p>
-              </div>
-            )
-          }
-        </section>
+        <section className='flex flex-col lg:flex-row gap-4 w-full'>
+          <div className='flex flex-col justify-between gap-4 h-full w-full bg-slate-500 px-4 py-6 rounded-xl lg:min-w-[20rem] lg:max-w-sm'>
+            <article className='flex flex-col gap-3'>
+              {
+                socketStatus === 'disconnected' && (
+                  <div className='flex flex-col gap-6 items-start'>
+                    <button 
+                      className='bg-purple-600 text-xl text-white font-bold py-2 px-2 rounded-md'
+                      onClick={() => {
+                        if(locationStatus === 'accessed') {
+                          connectToSocketServer()
+                        } else {
+                          toast.error('Please allow location access', {
+                            autoClose: 2000,
+                          })
+                        }
+                      }}
+                      >{locationStatus === 'accessed' ? 'Share Location' : 'Access Location'}</button>
+                    <span className='flex gap-1'>
+                      <input type = "text" placeholder = "Enter a link" className='bg-gray-300 rounded-md p-2 outline-none ring-0 text-md font-medium' />
+                      <button className='bg-yellow-400 text-xl text-gray-700 font-bold py-2 px-4 rounded-md'>Join</button>
+                    </span>
+                </div>
+                )
+              }
+              {
+                socketStatus === 'connected' && roomInfo && (
+                  <>
+                    <div className='flex gap-2 items-center bg-gray-300 rounded-md p-3'>
+                      <p className='text-md font-bold break-all'>{`${window.location.href}location/${roomInfo.roomId}`}</p>
+                      <span className='cursor-pointer p-2 rounded-full  hover:bg-gray-200 flex items-center' onClick={() => {
+                        const url = `${window.location.href}location/${roomInfo.roomId}`
+                        navigator.clipboard.writeText(url).then(() =>{
+                          toast.success('Copied to clipboard!', {
+                            autoClose: 2000,
+                          })
+                        }).catch(() => {
+                          toast.error('Failed to copy to clipboard', {
+                            autoClose: 2000,
+                          })
+                        })
+                      }}>
+                        <LuCopy size=  {16}/>
+                      </span>
+                    </div>
 
-        {
-          position && (
-            <section className='bg-gray-200 rounded-md overflow-hidden'>
-              <div className=''>
-                <Map location={position}/>
-              </div>
-            </section>
-          )
-        }
+                    <div className='flex p-2 bg-yellow-400 rounded-md'>
+                      <span className='flex gap-1 items-center'>
+                        <p className='text-lg font-semibold text-blue-600'>{3}</p>
+                        <p className='text-md font-semibold'>connected users!</p>
+                      </span>
+                    </div>
+                  </>
+                  )
+              }
+            </article>
+            {
+              socketStatus === 'connected' &&  roomInfo && (
+              <article className='w-full flex justify-center'>
+                <div>
+                  <button className='bg-red-600 text-xl text-white font-bold py-2 px-6 rounded-full' onClick={stopSharingLocation}>Stop Sharing</button>
+                </div>
+              </article>
+              )
+            }
+          </div>
+          <div className='w-full'>
+            {
+              position && (
+                <article className='bg-gray-200 rounded-md overflow-hidden'>
+                  <Map location={position}/>
+                </article>
+              )
+            }
+          </div>
+        </section>
       </div>
     </div>
   )
