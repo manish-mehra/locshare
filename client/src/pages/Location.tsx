@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import { useParams } from 'react-router-dom'
 import {useSocket} from '../context/socket'
-import Header from '../components/Header'
 import Status from '../components/Status'
 import Map from '../components/Map'
 import { SocketStatus, GeolocationPosition } from '../types'
@@ -66,13 +65,9 @@ function Location() {
   }, [socket])
 
   return (
-  <div className='flex justify-center p-3'>
-    <div className='flex flex-col md:min-w-full xl:min-w-[1100px] xl:max-w-[1200px] mb-4'>
-      <section className='pt-4 pb-20'>
-        <Header/>
-      </section>
-      <section className='pb-2'>
-        <div className='mb-4 bg-slate-600 rounded-md p-3 flex flex-wrap gap-3 justify-between items-center w-full'>
+    <React.Fragment>
+      <section className='pb-3'>
+        <div className='bg-slate-600 rounded-md p-3 flex flex-wrap gap-3 justify-between items-center w-full'>
           <Status locationStatus = {null} socketStatus={socketStatus}/>
           {
             position && (
@@ -148,8 +143,7 @@ function Location() {
           </React.Fragment> 
           )
         }
-    </div>
-  </div>
+    </React.Fragment>
   )
 }
 
