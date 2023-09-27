@@ -36,6 +36,7 @@ export default function Home() {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         })
+        console.log('updated position')
       setLocationStatus('accessed')
       }, (error) => {
         handleLocationError(error)
@@ -109,7 +110,6 @@ export default function Home() {
         })
       })
       socket.on('userLeftRoom', (data: {userId: string, totalConnectedUsers: string[]}) => {
-        console.log('user left', data)
         setRoomInfo((prev) => {
           if(prev) {
             return {
@@ -131,12 +131,14 @@ export default function Home() {
   }, [socket])
 
   function stopSharingLocation() {
-      socket.disconnect()
-      setSocketStatus('disconnected')
-      setRoomInfo(null)
-      toast.success('You are no longer live!', {
-        autoClose: 2000,
-      })
+      if(socket){
+        socket.disconnect()
+        setSocketStatus('disconnected')
+        setRoomInfo(null)
+        toast.success('You are no longer live!', {
+          autoClose: 2000,
+        })
+      }
   }
 
 
@@ -218,6 +220,14 @@ export default function Home() {
                   </div>
                 </>
                 )
+            }
+            {
+              socketStatus === 'connecting' && (
+                  <div className='flex flex-col gap-2 items-start bg-red-600 mt-5 p-2 rounded-md animate-bounce'>
+                    <p className='text-lg text-white font-semibold'>Connecting to server</p>
+                    <p className='text-sm text-gray-100'>Please wait...</p>
+                  </div>
+              )
             }
           </article>
           {

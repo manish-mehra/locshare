@@ -33,4 +33,10 @@ export const SocketProvider = ({children}: SocketProviderProps) => {
   )
 }
 
-export const useSocket = () => useContext(SocketContext)
+export const useSocket = () => {
+  const context = useContext(SocketContext)
+  if(!context) {
+    throw new Error('Something went wrong!')
+  }
+  return context
+}
