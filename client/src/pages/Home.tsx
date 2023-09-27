@@ -11,8 +11,9 @@ import {LuCopy} from 'react-icons/lu'
 
 
 type RoomInfo = {
-  roomId: string;
-  position: GeolocationPosition;
+  roomId: string
+  position: GeolocationPosition
+  totalConnectedUsers: string[]
 }
 
 export default function Home() {
@@ -85,26 +86,45 @@ export default function Home() {
         })
       })
 
-      socket.on('roomCreated', (data: {roomId: string, msg: string, position: GeolocationPosition}) => {
-        console.log(data)
+      socket.on('roomCreated', (data: RoomInfo) => {
         toast.success('You are live!', {
           autoClose: 2000,
           })
         setRoomInfo(data)
       })
-
-      socket.on('userJoinedRoom', (data) => {
-        console.log('someone joined the room', data)
-        position && socket.emit('updateLocation', {
-          position
+      socket.on('userJoinedRoom', (data: {userId: string, totalConnectedUsers: string[]}) => {
+        setRoomInfo((prev) => {
+          if(prev) {
+            return {
+              ...prev,
+              totalConnectedUsers: data.totalConnectedUsers
+            }
+          }
+          return null
         })
+
         toast.info(`${data.userId} joined the room`, {
           autoClose: 2000,
         })
-      })
 
-      socket.on("connect_error", (err:any) => {
-        console.log(`connect_error due to ${err.message}`)
+        position && socket.emit('updateLocation', {
+          position
+        })
+      })
+      socket.on('userLeftRoom', (data: {userId: string, totalConnectedUsers: string[]}) => {
+        console.log('user left', data)
+        setRoomInfo((prev) => {
+          if(prev) {
+            return {
+                ...prev,
+                totalConnectedUsers: data.totalConnectedUsers
+              }
+            }
+            return null
+          })
+          toast.info(`${data.userId} left the room`, {
+            autoClose: 2000,
+          })
       })
 
       socket.on('disconnect', () => {
@@ -150,7 +170,7 @@ export default function Home() {
                 socketStatus === 'disconnected' && (
                   <div className='flex flex-col gap-6 items-start w-full'>
                     <button 
-                      className='bg-purple-800 text-xl text-white font-bold py-2 px-2 rounded-md'
+                      className={`${locationStatus === 'accessed' ? 'bg-purple-800' : 'bg-gray-600 cursor-not-allowed'} text-md text-white font-bold py-2 px-4 rounded-md`}
                       onClick={() => {
                         if(locationStatus === 'accessed') {
                           connectToSocketServer()
@@ -160,10 +180,11 @@ export default function Home() {
                           })
                         }
                       }}
-                      >{locationStatus === 'accessed' ? 'Share Location' : 'Access Location'}</button>
+                      disabled={locationStatus !== 'accessed'}
+                      >Share Location</button>
                     <span className='flex gap-1'>
-                      <input type = "text" placeholder = "Enter a link" className='bg-gray-300 rounded-md p-2 outline-none ring-0 text-md font-medium' />
-                      <button className='bg-yellow-400 text-xl text-gray-700 font-bold py-2 px-4 rounded-md'>Join</button>
+                      <input type = "text" placeholder = "Enter a link" className='bg-gray-300 rounded-md px-4 py-2 outline-none ring-0 text-md font-medium' />
+                      <button className='bg-yellow-400 text-md text-gray-700 font-bold py-2 px-4 rounded-md'>Join</button>
                     </span>
                 </div>
                 )
@@ -176,8 +197,8 @@ export default function Home() {
                       <span className='cursor-pointer p-2 rounded-full  hover:bg-gray-200 flex items-center active:animate-ping' onClick={() => {
                         const url = `${window.location.href}location/${roomInfo.roomId}`
                         navigator.clipboard.writeText(url).then(() =>{
-                          toast.success('Copied to clipboard!', {
-                            autoClose: 2000,
+                          toast.info('Copied to clipboard!', {
+                            autoClose: 1000,
                           })
                         }).catch(() => {
                           toast.error('Failed to copy to clipboard', {
@@ -191,7 +212,7 @@ export default function Home() {
 
                     <div className='flex p-2 bg-yellow-400 rounded-md'>
                       <span className='flex gap-1 items-center'>
-                        <p className='text-lg font-semibold text-blue-600'>{3}</p>
+                        <p className='text-lg font-semibold text-blue-600'>{roomInfo && roomInfo.totalConnectedUsers.length - 1}</p>
                         <p className='text-md font-semibold'>connected users!</p>
                       </span>
                     </div>

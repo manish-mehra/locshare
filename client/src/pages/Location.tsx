@@ -37,22 +37,25 @@ function Location() {
         })
       })
 
-      socket.on('roomJoined', (data:any) => {
-        if(data.status === 'OK') {
-          console.log('dataaa', data)
+      socket.on('roomJoined', ({status}: {status: string}) => {
+        if(status === 'OK') {
           setRoomStatus('joined')
-        } else if (data.status === 'ERROR') {
-          console.log(data)
+        } else if (status === 'ERROR') {
           setRoomStatus('not-exist')
+        } else {
+          setRoomStatus('unknown')
         }
       })
 
-      socket.on('updateLocationResponse', (data:any) => {
-        console.log('get location', data)
-        setPosition({
-          lat: data.position.lat,
-          lng: data.position.lng
-        })
+      socket.on('updateLocationResponse', ({position}:{position: GeolocationPosition}) => {
+        if(position) {
+          setPosition(position)
+        }
+      })
+
+      socket.on('roomDestroyed', () => {
+        setRoomStatus('not-exist')
+        socket.disconnect()
       })
           
       socket.on('disconnect', () => {

@@ -1,5 +1,5 @@
 // SocketProvider.js
-import React, {useState, useEffect, createContext, useContext, JSX} from 'react'
+import {useState, createContext, useContext, JSX} from 'react'
 import {io, Socket} from 'socket.io-client'
 import { SOCKET_URL } from '../config'
 

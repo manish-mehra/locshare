@@ -26,38 +26,46 @@ const io: Server = new Server(server, {
   },
 })
 
-io.on('connection', (socket: Socket) => {
+// Define a custom interface extending the Socket interface
+interface CustomSocket extends Socket {
+  roomId?: string
+}
+
+const roomCreator = new Map<string, string>() // roomid => socketid
+
+io.on('connection', (socket: CustomSocket) => {
   console.log(`User connected: ${socket.id}`)
-  
-  socket.on('ping', () => {
-    console.log('ping received')
-    io.emit('pong', 'Hello from server')
-  })
-  
-  socket.on('createRoom', (data) => {
+
+  socket.on('createRoom', (data, callback) => {
     const roomId = Math.random().toString(36).substring(2, 7)
     socket.join(roomId)
-    socket.emit('roomCreated', {
-      ...data,
+    const totalRoomUsers = io.sockets.adapter.rooms.get(roomId)
+    socket.emit('roomCreated', { 
       roomId,
+      position: data.position,
+      totalConnectedUsers: Array.from(totalRoomUsers || []),
     })
+    roomCreator.set(roomId, socket.id)
+    socket.roomId = roomId //  attach roomId to socket
   })
 
-  socket.on('joinRoom', (data) => {
-    console.log('join request made')
+  socket.on('joinRoom', (data: {roomId: string}) => {
+
+    // check if room exists
     const roomExists = io.sockets.adapter.rooms.has(data.roomId)
     if (roomExists) {
       socket.join(data.roomId)
-      
-      // Notify the room creator about the new user
-      const roomClients: Set<string> | undefined = io.sockets.adapter.rooms.get(data.roomId)
-      const creatorSocketId = roomClients && Array.from(roomClients).find((socketId) => socketId !== socket.id)
+      socket.roomId = data.roomId //  attach roomId to socket
 
-      if (creatorSocketId) {
-        const creatorSocket = io.sockets.sockets.get(creatorSocketId)
+      // Notify the room creator about the new user     
+      const creatorSocketID = roomCreator.get(data.roomId)
+      if (creatorSocketID) {
+        const creatorSocket = io.sockets.sockets.get(creatorSocketID) // get socket instance of creator
         if (creatorSocket) {
+          const totalRoomUsers = io.sockets.adapter.rooms.get(data.roomId)
           creatorSocket.emit('userJoinedRoom', {
-            userId: socket.id
+            userId: socket.id,
+            totalConnectedUsers: Array.from(totalRoomUsers || [])
           })
         }
       }
@@ -67,7 +75,7 @@ io.on('connection', (socket: Socket) => {
       })
 
     } else {
-      io.to(`${socket.id}`).emit('joinRoomResponse', {
+      io.to(`${socket.id}`).emit('roomJoined', {
         status: 'ERROR'
       })
     }
@@ -76,8 +84,43 @@ io.on('connection', (socket: Socket) => {
   socket.on('updateLocation', (data) => {
     io.emit('updateLocationResponse', data)
   })
-
+ 
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`)
+
+    const roomId = socket.roomId
+    if(roomId){
+      // if disconnected user is creator, destroy room
+      if(roomCreator.get(roomId) === socket.id){
+        console.log('room creator left room')
+        // notify users in room that room is destroyed
+        const roomUsers = io.sockets.adapter.rooms.get(roomId)
+        if(roomUsers){
+          for (const socketId of roomUsers) {
+            io.to(`${socketId}`).emit('roomDestroyed', {
+              status: 'OK'
+            })
+          }
+        }
+        io.sockets.adapter.rooms.delete(roomId)
+        roomCreator.delete(roomId)    
+      } else{
+        socket.leave(roomId)
+        console.log('user left room')
+        // notify creator that user left room
+        const creatorSocketId = roomCreator.get(roomId)
+        if(creatorSocketId){
+          const creatorSocket = io.sockets.sockets.get(creatorSocketId)
+          if(creatorSocket){
+            creatorSocket.emit('userLeftRoom', {
+              userId: socket.id,
+              totalConnectedUsers: Array.from(io.sockets.adapter.rooms.get(roomId) || [])
+            })
+          }
+        }
+      }
+    }
+
   })
+  
 })
