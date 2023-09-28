@@ -14,7 +14,7 @@ Built with React.js, Socket.IO, TypeScript, React Leaflet, and Tailwind CSS.
 
 ## Demo
 
-[Live Demo](locshare.netlify.app)
+[Live Demo](https://locshare.netlify.app/)
 
 ## Contributing
 
