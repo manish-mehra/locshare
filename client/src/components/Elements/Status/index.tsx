@@ -1,4 +1,3 @@
-import React from 'react'
 import {MdOutlineLocationOn, MdOutlineLocationOff} from 'react-icons/md'
 import {LuServerOff, LuServer} from 'react-icons/lu'
 import { LocationStatus, SocketStatus } from '../../../types'
