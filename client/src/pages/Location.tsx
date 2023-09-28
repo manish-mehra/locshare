@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react'
 import { useParams } from 'react-router-dom'
 import {useSocket} from '../context/socket'
-import Status from '../components/Status'
-import Map from '../components/Map'
+import Status from '../components/Elements/Status'
+import Map from '../components/Elements/Map'
 import { SocketStatus, GeolocationPosition } from '../types'
 
 type RoomStatus = 'unknown' | 'joined' | 'not-exist'
