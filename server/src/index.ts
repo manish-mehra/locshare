@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const app: Express = express()
-const port = process.env.PORT || 4000
+const port = process.env.PORT || 5000
 
 app.use(cors())
 app.use(express.json())
@@ -17,7 +17,7 @@ app.get('/', (req: Request, res: Response) => {
 
 
 const server = app.listen(port, () => {
-  console.log(`⚡️[server]: Server is running at http://localhost:${port}`)
+  console.log(`Server is running`)
 })
 
 const io: Server = new Server(server, {
@@ -36,7 +36,7 @@ const roomCreator = new Map<string, string>() // roomid => socketid
 io.on('connection', (socket: CustomSocket) => {
   console.log(`User connected: ${socket.id}`)
 
-  socket.on('createRoom', (data, callback) => {
+  socket.on('createRoom', (data) => {
     const roomId = Math.random().toString(36).substring(2, 7)
     socket.join(roomId)
     const totalRoomUsers = io.sockets.adapter.rooms.get(roomId)
@@ -92,7 +92,6 @@ io.on('connection', (socket: CustomSocket) => {
     if(roomId){
       // if disconnected user is creator, destroy room
       if(roomCreator.get(roomId) === socket.id){
-        console.log('room creator left room')
         // notify users in room that room is destroyed
         const roomUsers = io.sockets.adapter.rooms.get(roomId)
         if(roomUsers){
@@ -106,7 +105,6 @@ io.on('connection', (socket: CustomSocket) => {
         roomCreator.delete(roomId)    
       } else{
         socket.leave(roomId)
-        console.log('user left room')
         // notify creator that user left room
         const creatorSocketId = roomCreator.get(roomId)
         if(creatorSocketId){
