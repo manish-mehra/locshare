@@ -2,6 +2,7 @@ import {useState, useEffect} from 'react'
 import {useSocket} from '../context/socket'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import StatusPanel from '../components/Elements/StatusPanel'
 import Status from '../components/Elements/Status'
 import Map from '../components/Elements/Map'
 import { GeolocationPosition, SocketStatus, LocationStatus } from '../types'
@@ -32,14 +33,26 @@ export default function Home() {
     let watchId: number | null = null
     if('geolocation' in navigator) {
       watchId = navigator.geolocation.watchPosition((position) => {
-        setPosition({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        })
-        console.log('updated position')
+      setPosition({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      })
       setLocationStatus('accessed')
       }, (error) => {
-        handleLocationError(error)
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setLocationStatus('denied')
+            break
+          case error.POSITION_UNAVAILABLE:
+            setLocationStatus('unknown')
+            break
+          case error.TIMEOUT:
+            setLocationStatus('error')
+            break
+          default:
+            setLocationStatus('error')
+            break
+        }
       })
       return () => {
         if(watchId) {
@@ -48,32 +61,6 @@ export default function Home() {
       }
     }
   }, [])
-
-
-  function handleLocationError(error: GeolocationPositionError) {
-    switch (error.code) {
-      case error.PERMISSION_DENIED:
-        setLocationStatus('denied')
-        break
-      case error.POSITION_UNAVAILABLE:
-        setLocationStatus('unknown')
-        break
-      case error.TIMEOUT:
-        setLocationStatus('error')
-        break
-      default:
-        setLocationStatus('error')
-        break
-    }
-  }
-
-  useEffect(() => {
-    if(socket) {
-      socket.emit('updateLocation', {
-        position
-      })
-    }
-  }, [position])
 
   useEffect(() => {
     if(socket) {
@@ -130,6 +117,14 @@ export default function Home() {
     }
   }, [socket])
 
+  useEffect(() => {
+    if(socket) {
+      socket.emit('updateLocation', {
+        position
+      })
+    }
+  }, [position])
+
   function stopSharingLocation() {
       if(socket){
         socket.disconnect()
@@ -145,7 +140,7 @@ export default function Home() {
   return (
     <>
       <section className='pb-3'>
-        <div className='bg-slate-600 rounded-md p-3 flex flex-wrap gap-3 justify-between items-center w-full'>
+        <article className='bg-slate-600 rounded-md p-3 flex flex-wrap gap-3 justify-between items-center w-full'>
           <Status locationStatus = {locationStatus} socketStatus={socketStatus}/>
           {
             position && (
@@ -155,11 +150,11 @@ export default function Home() {
               </div>
             )
           }
-        </div>
+        </article>
       </section>
       <section className='flex flex-col lg:flex-row gap-4 w-full h-auto'>
-        <div className={`flex flex-col justify-between gap-4 w-full bg-slate-500 px-4 py-6 rounded-xl lg:min-w-[20rem] ${position ? 'lg:max-w-sm' : 'w-full'}`}>
-          <article className='flex flex-col gap-3 w-full'>
+        <article className={`flex flex-col justify-between gap-4 w-full bg-slate-500 px-4 py-6 rounded-xl lg:min-w-[20rem] ${position ? 'lg:max-w-sm' : 'w-full'}`}>
+          <div className='flex flex-col gap-3 w-full'>
             {
               socketStatus === 'disconnected' && (
                 <div className='flex flex-col gap-6 items-start w-full'>
@@ -223,30 +218,33 @@ export default function Home() {
             }
             {
               socketStatus === 'connecting' && (
-                  <div className='flex flex-col gap-2 items-start bg-red-600 mt-5 p-2 rounded-md animate-bounce'>
-                    <p className='text-lg text-white font-semibold'>Connecting to server</p>
-                    <p className='text-sm text-gray-100'>Please wait...</p>
-                  </div>
+                <article className='mt-5'>
+                  <StatusPanel
+                    title = "Connecting to server" 
+                    subtitle = "Please wait..."
+                    status = "loading"
+                  />
+                </article>
               )
             }
-          </article>
+          </div>
           {
             socketStatus === 'connected' &&  roomInfo && (
-            <article className='w-full flex justify-center'>
+            <div className='w-full flex justify-center'>
               <div>
                 <button className='bg-red-600 text-xl text-white font-bold py-2 px-6 rounded-full' onClick={stopSharingLocation}>Stop Sharing</button>
               </div>
+            </div>
+            )
+          }
+        </article>
+        {
+          position && (
+            <article className='bg-gray-200 rounded-md overflow-hidden w-full'>
+              <Map location={position}/>
             </article>
-            )
-          }
-        </div>
-          {
-            position && (
-              <article className='bg-gray-200 rounded-md overflow-hidden w-full'>
-                <Map location={position}/>
-              </article>
-            )
-          }
+          )
+        }
       </section>
     </>
   )

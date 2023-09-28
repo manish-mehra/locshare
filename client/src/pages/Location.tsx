@@ -3,7 +3,9 @@ import { useParams } from 'react-router-dom'
 import {useSocket} from '../context/socket'
 import Status from '../components/Elements/Status'
 import Map from '../components/Elements/Map'
+import StatusPanel from '../components/Elements/StatusPanel'
 import { SocketStatus, GeolocationPosition } from '../types'
+import {BsFillArrowLeftCircleFill} from 'react-icons/bs'
 
 type RoomStatus = 'unknown' | 'joined' | 'not-exist'
 
@@ -65,9 +67,9 @@ function Location() {
   }, [socket])
 
   return (
-    <React.Fragment>
+    <>
       <section className='pb-3'>
-        <div className='bg-slate-600 rounded-md p-3 flex flex-wrap gap-3 justify-between items-center w-full'>
+        <article className='bg-slate-600 rounded-md p-3 flex flex-wrap gap-3 justify-between items-center w-full'>
           <Status locationStatus = {null} socketStatus={socketStatus}/>
           {
             position && (
@@ -77,73 +79,83 @@ function Location() {
               </div>
             )
             }
-        </div>
+        </article>
       </section>
-
       {
-        socketStatus === 'connecting' && (
-          <section className='bg-red-400 mt-5 p-2 rounded-md animate-bounce'>
-            <div className='flex flex-col gap-2 items-start mb-5'>
-              <p className='text-lg text-white font-semibold'>Connecting to server</p>
-              <p className='text-sm text-gray-100'>Please wait...</p>
-            </div>
+        roomStatus === 'joined' && (
+          <section>
+            {
+              position && (
+                <div className='bg-gray-200 rounded-md overflow-hidden'>
+                  <Map location={position}/>
+                </div>
+              )
+            }
           </section>
         )
       }
-
-      {
-        socketStatus === 'error' && (
-          <section className='bg-red-500 mt-5 p-2 rounded-md'>
-            <div className='flex flex-col gap-2 items-start mb-5'>
-              <p className='text-lg text-white font-semibold'>Failed to connect to server</p>
-              <p className='text-sm text-white'>Please try again later</p>
-            </div>
-          </section>
-        )
-      }
-          
+      <section className='pb-3'>
+        {
+          socketStatus === 'connecting' && (
+            <article className='mt-5'>
+              <StatusPanel 
+                title = "Connecting to server" 
+                subtitle = "Please wait..."
+                status = "loading"
+              />
+            </article>
+          )
+        }
+              {
+          socketStatus === 'error' && (
+            <article className='mt-5'>
+              <StatusPanel 
+                title = "Failed to connect to server" 
+                subtitle = "Please try again later" 
+                status = "error"
+                />
+            </article>
+          )
+        }
         {
           socketStatus === 'connected' && (
           <React.Fragment>
             {
               roomStatus === 'unknown' && (
-                <section className='bg-red-500 mt-5 p-2 rounded-md'>
-                  <div className='flex flex-col gap-2 items-start mb-5'>
-                    <p className='text-lg text-white font-semibold'>Room is unknown</p>
-                    <p className='text-sm text-white'>Please try again later</p>
-                  </div>
-                </section>
+                <article className='mt-5'>
+                  <StatusPanel
+                    title = "Room is unknown"
+                    subtitle = "Please try again later"
+                    status = "error"
+                  /> 
+                </article>
               )
             }
             
             {
-              roomStatus === 'joined' && (
-                <section>
-                  {
-                    position && (
-                      <div className='bg-gray-200 rounded-md overflow-hidden'>
-                        <Map location={position}/>
-                      </div>
-                    )
-                  }
-                </section>
-              )
-            }
-
-            {
               roomStatus === 'not-exist' && (
-                <section className='bg-red-500 mt-5 p-2 rounded-md'>
-                  <div className='flex flex-col gap-2 items-start mb-5'>
-                    <p className='text-lg text-white font-semibold'>Room doesn't exist!</p>
-                    <p className='text-sm text-white'>Enter the correct url</p>
-                  </div>
-                </section>
+                <article className='mt-5'>
+                  <StatusPanel
+                    title = "Room doesn't exist"
+                    subtitle = "Enter the correct url"
+                    status = "error"
+                  />
+                </article>
               )
             }
           </React.Fragment> 
           )
         }
-    </React.Fragment>
+        {
+          roomStatus !== 'joined' && (
+            <article className='text-white flex items-center gap-2'>
+              <BsFillArrowLeftCircleFill size={20} className='cursor-pointer' onClick={() => window.open('/', '_self')}/>
+              <p className='text-md font-semibold'>Back</p>
+            </article>
+          )
+        }
+      </section>
+    </>
   )
 }
 

@@ -10,7 +10,7 @@ type GeolocationPosition = {
 function LocationMarker({location}: {location: GeolocationPosition}) {
 
   const map = useMapEvents({
-
+    
   })
 
   const [position, setPosition] = useState({
