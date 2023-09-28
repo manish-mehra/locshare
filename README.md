@@ -1,4 +1,5 @@
 # LocShare: Realtime Location Sharing App
+![locshare-1](https://github.com/manish-mehra/locshare/assets/31545725/66d550b7-a7bf-4c3c-9f57-2802097b133c)
 
 Built with React.js, Socket.IO, TypeScript, React Leaflet, and Tailwind CSS.
 
