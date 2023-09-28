@@ -9,9 +9,7 @@ type GeolocationPosition = {
 
 function LocationMarker({location}: {location: GeolocationPosition}) {
 
-  const map = useMapEvents({
-    
-  })
+  const map = useMapEvents({})
 
   const [position, setPosition] = useState({
     lat: location.lat,
@@ -24,12 +22,11 @@ function LocationMarker({location}: {location: GeolocationPosition}) {
       lng: location.lng
     })
     map.flyTo([location.lat, location.lng])
-    map.locate()
   }, [location])
 
   return position === null ? null : (
     <Marker position={position}>
-      <Popup>You are here</Popup>
+      <Popup>User is here!</Popup>
     </Marker>
   )
 }
@@ -38,7 +35,6 @@ function LocationMarker({location}: {location: GeolocationPosition}) {
 function Map({location}: {location: GeolocationPosition}) {
 
   if(!location) return 'No location found'
-
 
   return (
     <div className='w-full bg-gray-100 h-[600px] md:h-[550px]'>
