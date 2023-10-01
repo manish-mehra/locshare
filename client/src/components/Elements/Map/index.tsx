@@ -1,5 +1,6 @@
 import {useState, useEffect} from 'react'
 import { MapContainer, TileLayer, useMapEvents, Marker, Popup } from 'react-leaflet'
+import { GeolocationPosition } from '../../../types'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import icon from 'leaflet/dist/images/marker-icon.png'
@@ -9,12 +10,6 @@ let DefaultIcon = L.icon({
     iconUrl: icon,
     shadowUrl: iconShadow
 })
-
-
-type GeolocationPosition = {
-  lat: number;
-  lng: number;
-}
 
 function LocationMarker({location}: {location: GeolocationPosition}) {
 
