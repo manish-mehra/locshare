@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import {useState, useEffect} from 'react'
 import { useParams } from 'react-router-dom'
 import {useSocket} from '../context/socket'
 import Status from '../components/Elements/Status'
@@ -106,7 +106,7 @@ function Location() {
             </article>
           )
         }
-              {
+        {
           socketStatus === 'error' && (
             <article className='mt-5'>
               <StatusPanel 
@@ -117,33 +117,28 @@ function Location() {
             </article>
           )
         }
+        
         {
-          socketStatus === 'connected' && (
-          <React.Fragment>
-            {
-              roomStatus === 'unknown' && (
-                <article className='mt-5'>
-                  <StatusPanel
-                    title = "Room is unknown"
-                    subtitle = "Please try again later"
-                    status = "error"
-                  /> 
-                </article>
-              )
-            }
-            
-            {
-              roomStatus === 'not-exist' && (
-                <article className='mt-5'>
-                  <StatusPanel
-                    title = "Room doesn't exist"
-                    subtitle = "Enter the correct url"
-                    status = "error"
-                  />
-                </article>
-              )
-            }
-          </React.Fragment> 
+          socketStatus !== 'connecting' && roomStatus === 'unknown' && (
+            <article className='mt-5'>
+              <StatusPanel
+                title = "Room is unknown"
+                subtitle = "Please try again later"
+                status = "error"
+              /> 
+            </article>
+          )
+        }
+        
+        {
+          roomStatus === 'not-exist' && (
+            <article className='mt-5'>
+              <StatusPanel
+                title = "Room doesn't exist"
+                subtitle = "Enter the correct url"
+                status = "error"
+              />
+            </article>
           )
         }
         {
